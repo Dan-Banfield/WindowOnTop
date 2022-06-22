@@ -18,6 +18,17 @@ namespace WindowOnTop
 
     public class WindowOnTop : ApplicationContext
     {
+        [DllImport("user32.dll")]
+        static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+        static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+        const uint SWP_NOSIZE = 0x0001;
+        const uint SWP_NOMOVE = 0x0002;
+        const uint SWP_SHOWWINDOW = 0x0040;
+
+        [DllImport("user32.dll")]
+        static extern IntPtr GetForegroundWindow();
+
         private NotifyIcon trayIcon;
 
         public WindowOnTop()
@@ -37,7 +48,7 @@ namespace WindowOnTop
 
         private void KeyboardHook_KeyPressed(object sender, KeyPressedEventArgs e)
         {
-            // TODO: Set the current foreground window's state to topmost.
+            MakeWindowTopmost(GetForegroundWindowHandle());
         }
 
         private void InitializeTrayIcon()
@@ -60,6 +71,16 @@ namespace WindowOnTop
         {
             trayIcon.Visible = false;
             Application.Exit();
+        }
+
+        private void MakeWindowTopmost(IntPtr windowHandle)
+        {
+            SetWindowPos(windowHandle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+        }
+
+        private IntPtr GetForegroundWindowHandle()
+        {
+            return GetForegroundWindow();
         }
     }
 
